@@ -1,0 +1,28 @@
+name: Promote to Staging
+
+on:
+  workflow_dispatch:
+    inputs:
+      commit_sha:
+        description: 'Commit SHA from the PR to promote'
+        required: true
+
+jobs:
+  promote-staging:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Merge commit into staging
+        run: |
+          git config user.name "github-actions"
+          git config user.email "github-actions@github.com"
+          git checkout staging
+          git cherry-pick ${{ github.event.inputs.commit_sha }}
+          git push origin staging
+
+      - name: Deploy to Staging
+        run: echo "Deployed to staging (commit ${{ github.event.inputs.commit_sha }})"
